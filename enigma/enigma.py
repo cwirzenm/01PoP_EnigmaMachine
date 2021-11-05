@@ -437,7 +437,6 @@ class Rotor:
 
     def __calculateOffset(self, input_char):
         convertChar = alphabet[(alphabet.index(input_char) - self.__offset) % 26]
-        # print(f"{input_char} converts to {convertChar} at offset {self.__offset}")
         return convertChar
 
     def _rotate(self):
@@ -447,22 +446,14 @@ class Rotor:
     def _isSetToNotch(self):
         return self.__position == self.__notches[self.__mapping]
 
-    def encodeRotor(self, input_char):
+    def _encodeRotor(self, input_char):
         receivedChar = alphabet[(alphabet.index(input_char) + self.__offset) % 26]
-        # print(f"{input_char} converts to {receivedChar} at offset {self.__offset}."
-        #       f"{self} rotor in - "
-        #       f"Received signal: {receivedChar}, "
-        #       f"Connects to: {self.__mappings[self.__mapping][receivedChar]}")
         return self.__calculateOffset(self.__mappings[self.__mapping][receivedChar])
 
-    def encodeRotor_rev(self, input_char):
+    def _encodeRotor_rev(self, input_char):
         receivedChar = alphabet[(alphabet.index(input_char) + self.__offset) % 26]
-        # print(f"{input_char} converts to {receivedChar} at offset {self.__offset}")
         for key in self.__mappings[self.__mapping].keys():
             if self.__mappings[self.__mapping][key] == receivedChar:
-                # print(f"{self} rotor out - "
-                #       f"Received signal: {receivedChar}, "
-                #       f"Connects to: {alphabet[(alphabet.index(key) - self.__offset) % 26]}")
                 return self.__calculateOffset(alphabet[alphabet.index(key)])
 
     def resetRotor(self):
@@ -496,7 +487,7 @@ class _RotorBoard:
         # rotor encoding
         output_char = input_char
         for rotor in self.__rotors:
-            output_char = rotor.encodeRotor(output_char)
+            output_char = rotor._encodeRotor(output_char)
 
         # reflector encoding
         # print(f"{self.__reflector} reflector - "
@@ -506,7 +497,7 @@ class _RotorBoard:
 
         # reversed rotor encoding
         for rotor in self.__rotors[::-1]:
-            output_char = rotor.encodeRotor_rev(output_char)
+            output_char = rotor._encodeRotor_rev(output_char)
 
         # print(f"{output_char} signal comes out")
         return output_char
@@ -618,15 +609,21 @@ if __name__ == "__main__":
     # initiating a reflector
     enigma.initReflector("C")
 
-    print(enigma.encode("XVDRUCPOJWDTGWTETXMELPGMAHWBPWYCKJMYMMFSUIYDICTCMEBGDVIAQZLXOANXNNKKMDNWEPMMKOLDTXHITJLMGZW"))
+    print(enigma.encode("XVDRUCPOJWDTGWTETXMELPGMAHWBPWYCKJMYMMFSUIYDICTCMEBGDVIAQZLXOANXNNKKMDNWEPMMKOLDTXHITJLMGZW"),
+          end='\n\n')
 
     enigma.reset()
 
     enigma = Machine()
 
-    enigma.initRotor("III", 1, 'A')
-    enigma.initRotor("II", 1, 'A')
-    enigma.initRotor("I", 1, 'A')
-    enigma.initReflector("B")
+    enigma.initRotor("III", 22, 'D')
+    enigma.initRotor("Beta", 25, 'L')
+    enigma.initRotor("I", 18, 'P')
+    enigma.initReflector("A")
 
-    print(enigma.encode("A") == "B")
+    print(enigma.encode("VSXIJNLSWPZCSWYAXGWFAMQXCHZUZJH"))
+    print(enigma.encode("LDBWXKKLMPJRVFLBQWTHXVSWKTQLVOSZO"))
+    print(enigma.encode("QIKAHSIPTRMTFQSVLCPYREKLTZMQULQKGOOM"))
+    print(enigma.encode("YULSZUJLOOHGMYJOEJZOZKVWLNOMMFVFQZSB"))
+    print(enigma.encode("JYJTPJUWEUALCSLOFO"))
+    print(enigma.encode("OFXOSXPEQZWN"))
