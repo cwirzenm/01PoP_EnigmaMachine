@@ -202,6 +202,7 @@ class _Reflector:
         else:
             return self.__customMap[input_char]
 
+    # custom reflector needed for exercise 5 in code5.py
     def _initCustomReflector(self, mapping):
         self.__mapping = 'Custom'
         self.__customMap = mapping
@@ -211,7 +212,7 @@ class _Reflector:
         self.__customMap = None
 
 
-class Rotor:
+class _Rotor:
     __mapping = None
     __setting = None
     __position = None
@@ -435,21 +436,25 @@ class Rotor:
     def __str__(self):
         return f"{self.__mapping} {self.__setting} {self.__position}"
 
+    # return the offset of the rotor relative to position 0
     def __calculateOffset(self, input_char):
-        convertChar = alphabet[(alphabet.index(input_char) - self.__offset) % 26]
-        return convertChar
+        return alphabet[(alphabet.index(input_char) - self.__offset) % 26]
 
+    # rotate the rotor by one position
     def _rotate(self):
         self.__position = alphabet[alphabet.index(self.__position) + 1] if not self.__position == 'Z' else 'A'
         self.__offset += 1
 
+    # return true if rotor is at its notch position
     def _isSetToNotch(self):
         return self.__position == self.__notches[self.__mapping]
 
+    # encoding the incoming path of the circuit, e.g. before it bounced off of a reflector
     def _encodeRotor(self, input_char):
         receivedChar = alphabet[(alphabet.index(input_char) + self.__offset) % 26]
         return self.__calculateOffset(self.__mappings[self.__mapping][receivedChar])
 
+    # encoding the returning path of the circuit, e.g. after it bounced off of a reflector
     def _encodeRotor_rev(self, input_char):
         receivedChar = alphabet[(alphabet.index(input_char) + self.__offset) % 26]
         for key in self.__mappings[self.__mapping].keys():
@@ -483,23 +488,18 @@ class _RotorBoard:
             self.__rotors[1]._rotate()
         self.__rotors[0]._rotate()  # right-most rotation
 
-        # print(f"{input_char} signal comes in")
-        # rotor encoding
+        # incoming rotor encoding
         output_char = input_char
         for rotor in self.__rotors:
             output_char = rotor._encodeRotor(output_char)
 
         # reflector encoding
-        # print(f"{self.__reflector} reflector - "
-        #       f"Received signal: {output_char}, "
-        #       f"Connects to: {self.__reflector._encodeReflector(output_char)}")
         output_char = self.__reflector._encodeReflector(output_char)
 
-        # reversed rotor encoding
+        # returning rotor encoding
         for rotor in self.__rotors[::-1]:
             output_char = rotor._encodeRotor_rev(output_char)
 
-        # print(f"{output_char} signal comes out")
         return output_char
 
     def initRotor(self, rotor_id, rotor_setting, rotor_position):
@@ -521,7 +521,7 @@ class _RotorBoard:
 
         # initiate the rotor
         self.__rotorCounter += 1
-        self.__rotors.append(Rotor(rotor_id, rotor_setting, rotor_position.upper()))
+        self.__rotors.append(_Rotor(rotor_id, rotor_setting, rotor_position.upper()))
 
     def initReflector(self, reflector_id):
         # check if the reflector is not initiated
@@ -565,8 +565,6 @@ class Machine(_PlugBoard, _RotorBoard):
         for char in input_string:
             if (65 <= ord(char) < 92 or 97 <= ord(char) < 123) and \
                     (65 <= ord(char) < 92 or 97 <= ord(char) < 123):
-
-                # todo check if the machine has all needed components
 
                 char = Machine._encodePlugBoard(self, char.upper())  # plugboard encoding
 
